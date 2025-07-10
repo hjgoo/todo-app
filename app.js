@@ -2,6 +2,7 @@ const todoInput = document.getElementById('todo-input');
 const prioritySelect = document.getElementById('priority-select');
 const addBtn = document.getElementById('add-btn');
 const todoList = document.getElementById('todo-list');
+const clearCompletedBtn = document.getElementById('clear-completed-btn');
 
 const priorityOrder = {
   high: 0,
@@ -9,30 +10,42 @@ const priorityOrder = {
   low: 2
 };
 
-// 할 일 생성
+// 할 일 생성 함수
 function createTodoItem(text, priority, completed = false) {
   const li = document.createElement('li');
   li.className = `todo-item ${priority}`;
-  if (completed) li.classList.add('completed');
 
-  // 완료 버튼
-  const checkBtn = document.createElement('button');
-  checkBtn.className = 'check-btn';
-  checkBtn.innerHTML = '✓';
-  checkBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    li.classList.toggle('completed');
-    saveTodos();
-    sortTodos();
-  });
+  // 완료 버튼 생성
+  const completeBtn = document.createElement('button');
+  completeBtn.className = 'complete-btn';
+  completeBtn.setAttribute('aria-label', '완료 토글 버튼');
+  completeBtn.innerHTML = completed
+      ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#b4f78e" viewBox="0 0 16 16"><path d="M13.485 1.929a.75.75 0 0 1 0 1.06L6.53 10.943 3.485 7.9a.75.75 0 0 1 1.06-1.06l1.984 1.984 5.956-5.956a.75.75 0 0 1 1.06 0z"/></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>`;
 
-  // 텍스트
+  li.appendChild(completeBtn);
+
+  // 텍스트 스팬
   const textSpan = document.createElement('span');
   textSpan.textContent = text;
+  li.appendChild(textSpan);
+
+  // 완료 상태 적용
+  if (completed) {
+    li.classList.add('completed');
+  }
+
+  completeBtn.addEventListener('click', () => {
+    li.classList.toggle('completed');
+    updateCompleteBtn(completeBtn, li.classList.contains('completed'));
+    sortAndRenderTodos();
+    saveTodos();
+  });
 
   // 삭제 버튼
   const removeBtn = document.createElement('button');
   removeBtn.className = 'remove-btn';
+  removeBtn.setAttribute('aria-label', '삭제 버튼');
   removeBtn.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
       <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 
@@ -40,25 +53,39 @@ function createTodoItem(text, priority, completed = false) {
       2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
     </svg>
   `;
+
   removeBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     todoList.removeChild(li);
     saveTodos();
   });
 
-  li.appendChild(checkBtn);
-  li.appendChild(textSpan);
   li.appendChild(removeBtn);
-  todoList.appendChild(li);
-  sortTodos();
+
+  return li;
 }
 
-// 저장
+// 완료 버튼 아이콘 업데이트
+function updateCompleteBtn(btn, completed) {
+  btn.innerHTML = completed
+      ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#b4f78e" viewBox="0 0 16 16"><path d="M13.485 1.929a.75.75 0 0 1 0 1.06L6.53 10.943 3.485 7.9a.75.75 0 0 1 1.06-1.06l1.984 1.984 5.956-5.956a.75.75 0 0 1 1.06 0z"/></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>`;
+}
+
+// 저장된 todos 불러오기
+function loadTodos() {
+  const saved = localStorage.getItem('todos');
+  if (!saved) return [];
+
+  return JSON.parse(saved);
+}
+
+// todos 로컬스토리지에 저장
 function saveTodos() {
   const items = todoList.querySelectorAll('.todo-item');
   const todos = [];
   items.forEach(item => {
-    const text = item.querySelector('span').textContent.trim();
+    const text = item.querySelector('span').textContent;
     let priority = 'medium';
     if (item.classList.contains('low')) priority = 'low';
     else if (item.classList.contains('high')) priority = 'high';
@@ -68,67 +95,72 @@ function saveTodos() {
   localStorage.setItem('todos', JSON.stringify(todos));
 }
 
-// 불러오기
-function loadTodos() {
-  const saved = localStorage.getItem('todos');
-  if (!saved) return;
+// 정렬 후 화면에 렌더링
+function sortAndRenderTodos() {
+  const todos = loadTodos();
 
-  const todos = JSON.parse(saved);
-  todos.forEach(({ text, priority, completed }) => {
-    createTodoItem(text, priority, completed);
+  // 완료 여부로 먼저 분리
+  const incomplete = todos.filter(t => !t.completed);
+  const complete = todos.filter(t => t.completed);
+
+  // 중요도 순서로 정렬 (high -> medium -> low)
+  incomplete.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  complete.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+  // 리스트 초기화
+  todoList.innerHTML = '';
+
+  // 미완료 리스트 먼저 추가
+  incomplete.forEach(({ text, priority, completed }) => {
+    const item = createTodoItem(text, priority, completed);
+    todoList.appendChild(item);
+  });
+
+  // 완료 리스트 뒤에 추가
+  complete.forEach(({ text, priority, completed }) => {
+    const item = createTodoItem(text, priority, completed);
+    todoList.appendChild(item);
   });
 }
 
-// 정렬 (우선순위 → 완료여부)
-function sortTodos() {
-  const items = Array.from(todoList.children);
-
-  items.sort((a, b) => {
-    const aCompleted = a.classList.contains('completed');
-    const bCompleted = b.classList.contains('completed');
-
-    if (aCompleted !== bCompleted) {
-      return aCompleted ? 1 : -1;
-    }
-
-    const getPriority = el =>
-        el.classList.contains('high') ? 'high' :
-            el.classList.contains('medium') ? 'medium' : 'low';
-
-    return priorityOrder[getPriority(a)] - priorityOrder[getPriority(b)];
-  });
-
-  items.forEach(item => todoList.appendChild(item));
-}
-
-// select 색상 반영
-function updateSelectColor() {
-  prioritySelect.classList.remove('low', 'medium', 'high');
-  prioritySelect.classList.add(prioritySelect.value);
-}
-
-// 이벤트
+// 추가 버튼 클릭 이벤트
 addBtn.addEventListener('click', () => {
   const text = todoInput.value.trim();
   const priority = prioritySelect.value;
+  if (text === '') return;
 
-  if (!text) {
-    alert('할 일을 입력해주세요!');
-    return;
-  }
+  const todos = loadTodos();
+  todos.push({ text, priority, completed: false });
+  localStorage.setItem('todos', JSON.stringify(todos));
 
-  createTodoItem(text, priority);
-  saveTodos();
   todoInput.value = '';
   todoInput.focus();
-  prioritySelect.value = 'medium';
-  updateSelectColor();
+
+  sortAndRenderTodos();
 });
+
+// Enter 키로 추가
 todoInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') addBtn.click();
+  if (e.key === 'Enter') {
+    addBtn.click();
+  }
 });
+
+// 완료된 항목 모두 삭제 버튼
+clearCompletedBtn.addEventListener('click', () => {
+  let todos = loadTodos();
+  todos = todos.filter(todo => !todo.completed);
+  localStorage.setItem('todos', JSON.stringify(todos));
+  sortAndRenderTodos();
+});
+
+// 중요도 선택 박스 색상 변경 함수
+function updateSelectColor() {
+  const val = prioritySelect.value;
+  prioritySelect.className = val;
+}
+updateSelectColor();
 prioritySelect.addEventListener('change', updateSelectColor);
 
-// 초기 로딩
-updateSelectColor();
-loadTodos();
+// 초기 렌더링
+sortAndRenderTodos();
