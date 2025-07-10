@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>TODO 리스트</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My TODO List</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>📝 TODO 리스트</h1>
-    <form id="todo-form">
-      <input type="text" id="todo-input" placeholder="할 일을 입력하세요..." required />
-      <button type="submit">추가</button>
-    </form>
-    <ul id="todo-list"></ul>
-  </div>
 
-  <script src="app.js"></script>
+<div class="app-container">
+  <h1>My TODO List</h1>
+  <section class="todo-input-section">
+    <input type="text" id="todo-input" placeholder="할 일을 입력하세요" />
+    <select id="priority-select" aria-label="중요도 선택">
+      <option value="low" class="low">Low</option>
+      <option value="medium" class="medium" selected>Mid</option>
+      <option value="high" class="high">High</option>
+    </select>
+    <button id="add-btn">+</button>
+  </section>
+
+  <ul id="todo-list" class="todo-list"></ul>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
-
