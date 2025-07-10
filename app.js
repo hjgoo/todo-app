@@ -3,32 +3,32 @@ const prioritySelect = document.getElementById('priority-select');
 const addBtn = document.getElementById('add-btn');
 const todoList = document.getElementById('todo-list');
 
-// 로컬스토리지에서 데이터 불러오기
-function loadTodos() {
-  const saved = localStorage.getItem('todos');
-  if (!saved) return;
+const priorityOrder = {
+  high: 0,
+  medium: 1,
+  low: 2
+};
 
-  const todos = JSON.parse(saved);
-  todos.forEach(({ text, priority, completed }) => {
-    createTodoItem(text, priority, completed);
-  });
-}
-
-// 할 일 생성 함수
+// 할 일 생성
 function createTodoItem(text, priority, completed = false) {
   const li = document.createElement('li');
   li.className = `todo-item ${priority}`;
-  li.textContent = text;
+  if (completed) li.classList.add('completed');
 
-  if (completed) {
-    li.classList.add('completed');
-  }
-
-  // 완료 토글
-  li.addEventListener('click', () => {
+  // 완료 버튼
+  const checkBtn = document.createElement('button');
+  checkBtn.className = 'check-btn';
+  checkBtn.innerHTML = '✓';
+  checkBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     li.classList.toggle('completed');
     saveTodos();
+    sortTodos();
   });
+
+  // 텍스트
+  const textSpan = document.createElement('span');
+  textSpan.textContent = text;
 
   // 삭제 버튼
   const removeBtn = document.createElement('button');
@@ -40,23 +40,25 @@ function createTodoItem(text, priority, completed = false) {
       2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
     </svg>
   `;
-
   removeBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     todoList.removeChild(li);
     saveTodos();
   });
 
+  li.appendChild(checkBtn);
+  li.appendChild(textSpan);
   li.appendChild(removeBtn);
   todoList.appendChild(li);
+  sortTodos();
 }
 
-// 로컬스토리지 저장
+// 저장
 function saveTodos() {
   const items = todoList.querySelectorAll('.todo-item');
   const todos = [];
   items.forEach(item => {
-    const text = item.childNodes[0].nodeValue.trim();
+    const text = item.querySelector('span').textContent.trim();
     let priority = 'medium';
     if (item.classList.contains('low')) priority = 'low';
     else if (item.classList.contains('high')) priority = 'high';
@@ -66,39 +68,67 @@ function saveTodos() {
   localStorage.setItem('todos', JSON.stringify(todos));
 }
 
-// 추가 버튼
+// 불러오기
+function loadTodos() {
+  const saved = localStorage.getItem('todos');
+  if (!saved) return;
+
+  const todos = JSON.parse(saved);
+  todos.forEach(({ text, priority, completed }) => {
+    createTodoItem(text, priority, completed);
+  });
+}
+
+// 정렬 (우선순위 → 완료여부)
+function sortTodos() {
+  const items = Array.from(todoList.children);
+
+  items.sort((a, b) => {
+    const aCompleted = a.classList.contains('completed');
+    const bCompleted = b.classList.contains('completed');
+
+    if (aCompleted !== bCompleted) {
+      return aCompleted ? 1 : -1;
+    }
+
+    const getPriority = el =>
+        el.classList.contains('high') ? 'high' :
+            el.classList.contains('medium') ? 'medium' : 'low';
+
+    return priorityOrder[getPriority(a)] - priorityOrder[getPriority(b)];
+  });
+
+  items.forEach(item => todoList.appendChild(item));
+}
+
+// select 색상 반영
+function updateSelectColor() {
+  prioritySelect.classList.remove('low', 'medium', 'high');
+  prioritySelect.classList.add(prioritySelect.value);
+}
+
+// 이벤트
 addBtn.addEventListener('click', () => {
   const text = todoInput.value.trim();
   const priority = prioritySelect.value;
 
-  if (text === '') {
+  if (!text) {
     alert('할 일을 입력해주세요!');
     return;
   }
 
   createTodoItem(text, priority);
   saveTodos();
-
   todoInput.value = '';
   todoInput.focus();
   prioritySelect.value = 'medium';
   updateSelectColor();
 });
-
-// Enter 키로 추가
 todoInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    addBtn.click();
-  }
+  if (e.key === 'Enter') addBtn.click();
 });
-
-// select 색상 업데이트
-function updateSelectColor() {
-  prioritySelect.classList.remove('low', 'medium', 'high');
-  prioritySelect.classList.add(prioritySelect.value);
-}
-updateSelectColor();
 prioritySelect.addEventListener('change', updateSelectColor);
 
 // 초기 로딩
+updateSelectColor();
 loadTodos();

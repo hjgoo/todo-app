@@ -1,4 +1,4 @@
-/* 기본 리셋 및 폰트 */
+/* 기본 설정 */
 * {
   box-sizing: border-box;
 }
@@ -7,15 +7,11 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  overflow-x: hidden;
-  position: relative;
   background: mistyrose;
 }
 
 /* 앱 컨테이너 */
 .app-container {
-  position: relative;
-  z-index: 1;
   max-width: 400px;
   margin: 60px auto;
   background: rgba(0,0,0,0.6);
@@ -32,11 +28,12 @@ h1 {
   text-shadow: 0 2px 6px rgba(0,0,0,0.6);
 }
 
-/* todo input section */
+/* 입력 영역 */
 .todo-input-section {
   display: flex;
   gap: 10px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 8px;
 }
 .todo-input-section input[type="text"] {
   flex-grow: 1;
@@ -73,7 +70,7 @@ h1 {
   background-color: #ff4c3b;
 }
 
-/* todo list */
+/* 투두 리스트 */
 .todo-list {
   list-style: none;
   padding: 0;
@@ -81,38 +78,54 @@ h1 {
 }
 .todo-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 14px 20px;
   border-radius: 14px;
   margin-bottom: 14px;
   font-size: 18px;
-  cursor: default;
   user-select: none;
+}
+.todo-item span {
+  flex-grow: 1;
+  margin: 0 10px;
 }
 
 /* 중요도 색상 */
 .todo-item.low {
   background-color: #77dd77;
-  color: #fff;
 }
 .todo-item.medium {
   background-color: #ffb347;
-  color: #fff;
 }
 .todo-item.high {
   background-color: #ff6961;
-  color: #fff;
 }
-
-/* 완료 체크 */
 .todo-item.completed {
   opacity: 0.6;
   text-decoration: line-through;
 }
 
+/* 완료 버튼 */
+.check-btn {
+  background-color: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.check-btn:hover {
+  background-color: #fff;
+  color: #333;
+}
+
 /* 삭제 버튼 */
-.todo-item .remove-btn {
+.remove-btn {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -120,7 +133,6 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease, color 0.25s ease;
   color: #fff;
   font-size: 20px;
   border-radius: 50%;
@@ -129,20 +141,17 @@ h1 {
   line-height: 0;
   box-shadow: 0 0 5px rgba(255, 105, 97, 0.7);
 }
-.todo-item .remove-btn:hover {
+.remove-btn:hover {
   color: #ff4c3b;
   transform: scale(1.2);
-  box-shadow: 0 0 8px rgba(255, 76, 59, 0.9);
 }
 
 /* select 색상 */
 select.low {
   background-color: #77dd77;
-  color: #000;
 }
 select.medium {
   background-color: #ffb347;
-  color: #000;
 }
 select.high {
   background-color: #ff6961;
@@ -150,11 +159,9 @@ select.high {
 }
 select option.low {
   background-color: #77dd77;
-  color: #000;
 }
 select option.medium {
   background-color: #ffb347;
-  color: #000;
 }
 select option.high {
   background-color: #ff6961;
