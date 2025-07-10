@@ -7,12 +7,15 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  background: mistyrose;
   overflow-x: hidden;
+  position: relative;
+  background: mistyrose;
 }
 
 /* 앱 컨테이너 */
 .app-container {
+  position: relative;
+  z-index: 1;
   max-width: 400px;
   margin: 60px auto;
   background: rgba(0,0,0,0.6);
@@ -29,19 +32,23 @@ h1 {
   text-shadow: 0 2px 6px rgba(0,0,0,0.6);
 }
 
-/* 입력 섹션 */
+/* todo input section */
 .todo-input-section {
   display: flex;
   gap: 10px;
   margin-bottom: 24px;
+  flex-wrap: nowrap;
 }
+
 .todo-input-section input[type="text"] {
   flex-grow: 1;
+  min-width: 0;
   padding: 10px 14px;
   border-radius: 10px;
   border: none;
   font-size: 16px;
 }
+
 .todo-input-section select {
   border-radius: 10px;
   border: none;
@@ -55,7 +62,9 @@ h1 {
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 12px 12px;
+  min-width: 80px;
 }
+
 .todo-input-section button {
   background-color: #ff6961;
   color: white;
@@ -65,27 +74,38 @@ h1 {
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.25s ease;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 .todo-input-section button:hover {
   background-color: #ff4c3b;
 }
 
-/* 완료된 항목 모두 삭제 버튼 */
-.clear-completed-section {
-  margin-bottom: 24px;
-  text-align: center;
-}
-#clear-completed-btn {
+/* 삭제 버튼(D) 스타일 */
+#delete-completed-btn {
   background-color: #555;
-  border: none;
-  color: white;
-  padding: 10px 18px;
+  margin-left: 6px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
+  font-weight: bold;
+  font-size: 20px;
+  color: white;
+  border: none;
   cursor: pointer;
-  font-size: 16px;
   transition: background-color 0.3s ease;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-#clear-completed-btn:hover {
+
+#delete-completed-btn:hover {
   background-color: #ff4c3b;
 }
 
@@ -103,8 +123,8 @@ h1 {
   border-radius: 14px;
   margin-bottom: 14px;
   font-size: 18px;
-  user-select: none;
   cursor: default;
+  user-select: none;
 }
 
 /* 중요도 색상 */
@@ -121,30 +141,30 @@ h1 {
   color: #fff;
 }
 
-/* 완료된 항목 스타일 */
+/* 완료 체크 */
 .todo-item.completed {
   opacity: 0.6;
   text-decoration: line-through;
 }
 
-/* 완료 버튼 */
+/* 완료 버튼 스타일 */
 .complete-btn {
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 20px;
-  color: #fff;
+  padding: 4px;
   margin-right: 10px;
-  transition: color 0.25s ease;
   display: flex;
   align-items: center;
-}
-.complete-btn:hover {
+  justify-content: center;
+  transition: transform 0.2s ease, color 0.25s ease;
   color: #b4f78e;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
 /* 삭제 버튼 - 동그란 아이콘 스타일 */
-.remove-btn {
+.todo-item .remove-btn {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -161,7 +181,8 @@ h1 {
   line-height: 0;
   box-shadow: 0 0 5px rgba(255, 105, 97, 0.7);
 }
-.remove-btn:hover {
+
+.todo-item .remove-btn:hover {
   color: #ff4c3b;
   transform: scale(1.2);
   box-shadow: 0 0 8px rgba(255, 76, 59, 0.9);
